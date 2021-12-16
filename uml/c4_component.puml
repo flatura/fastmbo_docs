@@ -1,0 +1,44 @@
+@startuml
+' Компонентная диаграмма FastMBO
+
+package "FastMBO" {
+  [Web UI\n(Thymeleaf, Bootstrap)] as UI
+  [REST API\n(Spring Boot)] as API
+  [Auth & RBAC\n(Spring Security)] as Auth
+  [Бизнес-логика\n(Services Layer)] as Services
+  [Отчеты и экспорт\n(Reporting)] as Reporting
+  [Журналирование и аудит\n(Audit Log)] as Audit
+  [Хранение файлов\n(File Storage)] as Files
+  [БД (PostgreSQL)] as DB
+}
+
+package "MinIO Service" {
+    [Files Storage Service\n(MinIO/S3)] as MinIO
+}
+Services --> MinIO : S3 API (upload/download)
+
+actor Admin as "Администратор"
+actor Employee as "Сотрудник"
+actor Leader as "Руководитель"
+actor Director as "Директор"
+
+' Внешние взаимодействия
+Admin    --> UI
+Employee --> UI
+Leader   --> UI
+Director --> UI
+
+' Внутренние взаимодействия
+UI --> API : HTTP(S) запросы
+API --> Auth : Аутентификация/\nАвторизация
+API --> Services : Вызовы бизнес-логики
+Services --> DB : CRUD/транзакции
+Services --> Audit : Запись действий
+Services --> Files : Загрузка/чтение вложений
+Services --> Reporting : Генерация отчетов/экспорт
+Reporting --> DB : Чтение данных
+Audit --> DB : Запись логов
+Files --> DB : Метаинформация о файлах
+Auth --> DB : Информация о пользователях
+
+@enduml

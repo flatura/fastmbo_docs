@@ -1,0 +1,32 @@
+@startuml
+
+' Пользователи
+users o-- periods
+users o-- groups
+users o-- metric_types
+users o-- metric_facts
+users o-- achievement_types
+users o-- achievement_facts
+users o-- audit_log
+users o-- manual_point_adjustments
+users o-- performance_lists
+
+' Группы пользователей (многие-ко-многим)
+users o-- "0..n" user_groups
+groups o-- "0..n" user_groups
+
+' Периоды
+periods *-- metric_facts
+periods *-- achievement_facts
+periods *-- manual_point_adjustments
+periods o-- performance_lists
+
+' Метрики и факты
+metric_types *-- metric_facts
+performance_lists o-- metric_types
+
+' Достижения и факты
+achievement_types *-- achievement_facts
+performance_lists o-- achievement_types
+
+@enduml
