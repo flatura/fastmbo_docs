@@ -1,0 +1,32 @@
+@startuml
+!define RECTANGLE rectangle
+
+' C4 Container Diagram for FastMBO
+
+actor User as "Пользователь"
+
+RECTANGLE "Корпоративная сеть (LAN, VPN)" as LAN {
+  RECTANGLE "Сервер приложения FastMBO\n(Spring Boot монолит)" as AppSrv {
+    [Web-интерфейс\n(Thymeleaf, Bootstrap)] as WebUI
+    [REST API\n(Spring MVC, OpenAPI)] as RestAPI
+    [Модуль аутентификации\n(Spring Security)] as Auth
+    [Бизнес-логика] as BizLogic
+    [Модуль отчётов и экспорта] as Reporting
+    [Модуль хранения вложений] as Attachments
+    [Модуль журналирования и аудита] as Audit
+  }
+  [PostgreSQL БД] as DB
+  [Файловое хранилище] as FileStore
+}
+
+User --> WebUI : HTTP/HTTPS
+WebUI --> RestAPI
+RestAPI --> Auth
+RestAPI --> BizLogic
+BizLogic --> DB : JDBC
+BizLogic --> FileStore : чтение/запись файлов (локально\nили через S3 API)
+BizLogic --> Audit
+Reporting --> DB
+Audit --> DB
+
+@enduml
