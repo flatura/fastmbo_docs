@@ -1,7 +1,7 @@
 # Доменная модель
 
 ## Модель данных. Entity Relation Diagram
-![erd.png](uml/erd.png)
+![erd.svg](uml/erd.svg)
 
 ## Требования к структуре данных:
 

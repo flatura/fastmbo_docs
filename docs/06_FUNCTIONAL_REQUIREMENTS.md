@@ -109,10 +109,10 @@
 ## 5. Архитектура
 
 ### 5.2. Компонентная диаграмма
-![component.png](uml/c4_component.png)
+![component.svg](uml/c4_component.svg)
 
 ### 5.3. Контейнерная диаграмма
-![container.png](uml/c4_container.png)
+![container.svg](uml/c4_container.svg)
 
 ## 6. Сценарии ошибок и исключений: 
 
