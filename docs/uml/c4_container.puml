@@ -1,32 +1,36 @@
 @startuml
-!define RECTANGLE rectangle
+set separator none
+title FastMBO — Контейнерная диаграмма
 
-' C4 Container Diagram for FastMBO
+left to right direction
 
-actor User as "Пользователь"
+!include <C4/C4>
+!include <C4/C4_Context>
+!include <C4/C4_Container>
 
-RECTANGLE "Корпоративная сеть (LAN, VPN)" as LAN {
-  RECTANGLE "Сервер приложения FastMBO\n(Spring Boot монолит)" as AppSrv {
-    [Web-интерфейс\n(Thymeleaf, Bootstrap)] as WebUI
-    [REST API\n(Spring MVC, OpenAPI)] as RestAPI
-    [Модуль аутентификации\n(Spring Security)] as Auth
-    [Бизнес-логика] as BizLogic
-    [Модуль отчётов и экспорта] as Reporting
-    [Модуль хранения вложений] as Attachments
-    [Модуль журналирования и аудита] as Audit
-  }
-  [PostgreSQL БД] as DB
-  [Файловое хранилище] as FileStore
+Person(Пользователь, "Пользователь", $descr="Работает через веб-интерфейс.", $tags="", $link="")
+
+System_Boundary("FastMBO_boundary", "FastMBO", $tags="") {
+  Container(FastMBO.PostgreSQLDB, "PostgreSQL DB", $techn="PostgreSQL", $descr="Реляционное хранилище.", $tags="", $link="")
+  Container(FastMBO.FileStore, "File Store", $techn="FS / S3", $descr="Файловое хранилище (локально или S3-совместимое).", $tags="", $link="")
+  Container(FastMBO.WebUI, "Web UI", $techn="Thymeleaf, Bootstrap", $descr="Пользовательский интерфейс.", $tags="", $link="")
+  Container(FastMBO.RESTAPI, "REST API", $techn="Spring MVC, OpenAPI", $descr="HTTP API.", $tags="", $link="")
+  Container(FastMBO.Auth, "Auth", $techn="Spring Security", $descr="Аутентификация и авторизация.", $tags="", $link="")
+  Container(FastMBO.BusinessLogic, "Business Logic", $techn="Java", $descr="Сервисный слой бизнес-логики.", $tags="", $link="")
+  Container(FastMBO.Reporting, "Reporting", $techn="Java", $descr="Отчёты и экспорт.", $tags="", $link="")
+  Container(FastMBO.Attachments, "Attachments", $techn="Java", $descr="Хранение и доступ к вложениям.", $tags="", $link="")
+  Container(FastMBO.Audit, "Audit", $techn="Java", $descr="Журналирование и аудит.", $tags="", $link="")
 }
 
-User --> WebUI : HTTP/HTTPS
-WebUI --> RestAPI
-RestAPI --> Auth
-RestAPI --> BizLogic
-BizLogic --> DB : JDBC
-BizLogic --> FileStore : чтение/запись файлов (локально\nили через S3 API)
-BizLogic --> Audit
-Reporting --> DB
-Audit --> DB
+Rel(Пользователь, FastMBO.WebUI, "HTTP/HTTPS", $techn="", $tags="", $link="")
+Rel(FastMBO.WebUI, FastMBO.RESTAPI, "HTTP запросы", $techn="", $tags="", $link="")
+Rel(FastMBO.RESTAPI, FastMBO.Auth, "Проверка пользователя и ролей", $techn="", $tags="", $link="")
+Rel(FastMBO.RESTAPI, FastMBO.BusinessLogic, "Вызовы бизнес-логики", $techn="", $tags="", $link="")
+Rel(FastMBO.BusinessLogic, FastMBO.PostgreSQLDB, "JDBC", $techn="", $tags="", $link="")
+Rel(FastMBO.BusinessLogic, FastMBO.FileStore, "Чтение/запись файлов", $techn="", $tags="", $link="")
+Rel(FastMBO.BusinessLogic, FastMBO.Audit, "События аудита", $techn="", $tags="", $link="")
+Rel(FastMBO.Reporting, FastMBO.PostgreSQLDB, "Чтение данных", $techn="", $tags="", $link="")
+Rel(FastMBO.Audit, FastMBO.PostgreSQLDB, "Запись логов", $techn="", $tags="", $link="")
 
+SHOW_LEGEND(true)
 @enduml

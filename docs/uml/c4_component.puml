@@ -1,44 +1,47 @@
 @startuml
-' Компонентная диаграмма FastMBO
+set separator none
+title FastMBO — Компоненты
 
-package "FastMBO" {
-  [Web UI\n(Thymeleaf, Bootstrap)] as UI
-  [REST API\n(Spring Boot)] as API
-  [Auth & RBAC\n(Spring Security)] as Auth
-  [Бизнес-логика\n(Services Layer)] as Services
-  [Отчеты и экспорт\n(Reporting)] as Reporting
-  [Журналирование и аудит\n(Audit Log)] as Audit
-  [Хранение файлов\n(File Storage)] as Files
-  [БД (PostgreSQL)] as DB
+left to right direction
+
+!include <C4/C4>
+!include <C4/C4_Context>
+!include <C4/C4_Container>
+!include <C4/C4_Component>
+
+Person(Администратор, "Администратор", $descr="Администрирование.", $tags="", $link="")
+Person(Сотрудник, "Сотрудник", $descr="Работает с оценочными листами.", $tags="", $link="")
+Person(Руководитель, "Руководитель", $descr="Согласует достижения подчинённых.", $tags="", $link="")
+Person(Директор, "Директор", $descr="Управляет периодами и контролирует фонд.", $tags="", $link="")
+Container(FastMBO.Database, "Database", $techn="PostgreSQL", $descr="Реляционное хранилище.", $tags="", $link="")
+System(MinIOService, "MinIO Service", $descr="S3-совместимое файловое хранилище.", $tags="", $link="")
+
+Container_Boundary("FastMBO.FastMBOApplication_boundary", "FastMBO Application", $tags="") {
+  Component(FastMBO.FastMBOApplication.ServicesLayer, "Services Layer", $techn="", $descr="Бизнес-логика.", $tags="", $link="")
+  Component(FastMBO.FastMBOApplication.Reporting, "Reporting", $techn="", $descr="Отчёты и экспорт.", $tags="", $link="")
+  Component(FastMBO.FastMBOApplication.AuditLog, "Audit Log", $techn="", $descr="Журналирование и аудит.", $tags="", $link="")
+  Component(FastMBO.FastMBOApplication.FileStorage, "File Storage", $techn="", $descr="Работа с файлами и метаданными.", $tags="", $link="")
+  Component(FastMBO.FastMBOApplication.WebUI, "Web UI", $techn="Thymeleaf, Bootstrap", $descr="Пользовательский интерфейс.", $tags="", $link="")
+  Component(FastMBO.FastMBOApplication.RESTAPI, "REST API", $techn="Spring MVC", $descr="HTTP API.", $tags="", $link="")
+  Component(FastMBO.FastMBOApplication.AuthRBAC, "Auth & RBAC", $techn="Spring Security", $descr="Аутентификация и авторизация.", $tags="", $link="")
 }
 
-package "MinIO Service" {
-    [Files Storage Service\n(MinIO/S3)] as MinIO
-}
-Services --> MinIO : S3 API (upload/download)
+Rel(Администратор, FastMBO.FastMBOApplication.WebUI, "Использует UI", $techn="", $tags="", $link="")
+Rel(Сотрудник, FastMBO.FastMBOApplication.WebUI, "Использует UI", $techn="", $tags="", $link="")
+Rel(Руководитель, FastMBO.FastMBOApplication.WebUI, "Использует UI", $techn="", $tags="", $link="")
+Rel(Директор, FastMBO.FastMBOApplication.WebUI, "Использует UI", $techn="", $tags="", $link="")
+Rel(FastMBO.FastMBOApplication.WebUI, FastMBO.FastMBOApplication.RESTAPI, "HTTP(S) запросы", $techn="", $tags="", $link="")
+Rel(FastMBO.FastMBOApplication.RESTAPI, FastMBO.FastMBOApplication.AuthRBAC, "Аутентификация/Авторизация", $techn="", $tags="", $link="")
+Rel(FastMBO.FastMBOApplication.RESTAPI, FastMBO.FastMBOApplication.ServicesLayer, "Вызовы бизнес-логики", $techn="", $tags="", $link="")
+Rel(FastMBO.FastMBOApplication.ServicesLayer, FastMBO.Database, "CRUD/транзакции", $techn="", $tags="", $link="")
+Rel(FastMBO.FastMBOApplication.ServicesLayer, FastMBO.FastMBOApplication.AuditLog, "Запись действий", $techn="", $tags="", $link="")
+Rel(FastMBO.FastMBOApplication.ServicesLayer, FastMBO.FastMBOApplication.FileStorage, "Загрузка/чтение вложений", $techn="", $tags="", $link="")
+Rel(FastMBO.FastMBOApplication.ServicesLayer, FastMBO.FastMBOApplication.Reporting, "Генерация отчётов/экспорт", $techn="", $tags="", $link="")
+Rel(FastMBO.FastMBOApplication.Reporting, FastMBO.Database, "Чтение данных", $techn="", $tags="", $link="")
+Rel(FastMBO.FastMBOApplication.AuditLog, FastMBO.Database, "Запись логов", $techn="", $tags="", $link="")
+Rel(FastMBO.FastMBOApplication.FileStorage, FastMBO.Database, "Метаинформация о файлах", $techn="", $tags="", $link="")
+Rel(FastMBO.FastMBOApplication.AuthRBAC, FastMBO.Database, "Информация о пользователях", $techn="", $tags="", $link="")
+Rel(FastMBO.FastMBOApplication.ServicesLayer, MinIOService, "S3 API (upload/download)", $techn="", $tags="", $link="")
 
-actor Admin as "Администратор"
-actor Employee as "Сотрудник"
-actor Leader as "Руководитель"
-actor Director as "Директор"
-
-' Внешние взаимодействия
-Admin    --> UI
-Employee --> UI
-Leader   --> UI
-Director --> UI
-
-' Внутренние взаимодействия
-UI --> API : HTTP(S) запросы
-API --> Auth : Аутентификация/\nАвторизация
-API --> Services : Вызовы бизнес-логики
-Services --> DB : CRUD/транзакции
-Services --> Audit : Запись действий
-Services --> Files : Загрузка/чтение вложений
-Services --> Reporting : Генерация отчетов/экспорт
-Reporting --> DB : Чтение данных
-Audit --> DB : Запись логов
-Files --> DB : Метаинформация о файлах
-Auth --> DB : Информация о пользователях
-
+SHOW_LEGEND(true)
 @enduml
