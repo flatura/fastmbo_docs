@@ -23,8 +23,9 @@ jobs:
 
     env:
       PLANTUML_VERSION: '1.2024.7'
-      STRUCTURIZR_CLI_VERSION: '2024.07.18'  # зафиксируй под нужную
+      STRUCTURIZR_CLI_VERSION: '2024.07.03'
       SITE_DIR: _site
+      PLANTUML_JAR: ${{ github.workspace }}/plantuml.jar
 
     steps:
       - name: Checkout
@@ -69,7 +70,7 @@ jobs:
         run: |
           mkdir -p structurizr-cli
           curl -fsSL -o structurizr-cli.zip \
-            https://github.com/structurizr/cli/releases/download/v${STRUCTURIZR_CLI_VERSION}/structurizr-cli-${STRUCTURIZR_CLI_VERSION}.zip
+            https://github.com/structurizr/cli/releases/download/v${STRUCTURIZR_CLI_VERSION}/structurizr-cli.zip
           unzip -q structurizr-cli.zip -d structurizr-cli
           rm structurizr-cli.zip
           chmod +x structurizr-cli/structurizr.sh
@@ -79,46 +80,90 @@ jobs:
           rm -rf "${SITE_DIR}"
           mkdir -p "${SITE_DIR}/docs/uml" "${SITE_DIR}/docs/bpmn" "${SITE_DIR}/docs/c4"
 
-      # --- Render PlantUML (.puml -> .svg) ---
+      # --- PlantUML (.puml -> .svg) ---
       - name: Render PlantUML to SVG
         if: ${{ hashFiles('docs/uml/**/*.puml') != '' }}
         run: |
-          # копируем исходники в сайт, чтобы структура совпадала
           rsync -a --include='*/' --include='*.puml' --exclude='*' docs/uml/ "${SITE_DIR}/docs/uml/"
-          # рендерим SVG на месте
           find "${SITE_DIR}/docs/uml" -name '*.puml' -print0 | \
-            xargs -0 -I{} sh -c 'java -jar ../../../../plantuml.jar -tsvg "{}"'
+            xargs -0 -I{} java -jar "${PLANTUML_JAR}" -tsvg "{}"
 
-      # --- Render BPMN (.bpmn -> .svg) ---
-      # Используем npx bpmn-to-image (headless Chrome внутри), формат SVG
+      # --- BPMN (.bpmn -> .svg) ---
       - name: Render BPMN to SVG
         if: ${{ hashFiles('docs/bpmn/**/*.bpmn') != '' }}
         run: |
           rsync -a --include='*/' --include='*.bpmn' --exclude='*' docs/bpmn/ "${SITE_DIR}/docs/bpmn/"
-          # пофайлово: сохраняем результат рядом
-          find "${SITE_DIR}/docs/bpmn" -name '*.bpmn' -print0 | \
-            xargs -0 -I{} sh -c 'npx -y bpmn-to-image "{}" --format svg --output "$(dirname "{}")"'
 
-      # --- Render Structurizr DSL (.dsl -> PlantUML -> .svg) ---
+          npm init -y >/dev/null 2>&1 || true
+          npm i --no-save puppeteer@24.9.0 bpmn-to-image@0.9.0 bpmn-js@16
+
+          cat > bpmn-export.js <<'JS'
+          const fs = require('fs');
+          const path = require('path');
+          const puppeteer = require('puppeteer');
+
+          (async () => {
+            const files = process.argv.slice(2);
+            const browser = await puppeteer.launch({
+              headless: 'new',
+              args: ['--no-sandbox','--disable-setuid-sandbox','--disable-dev-shm-usage']
+            });
+            const page = await browser.newPage();
+
+            const skeleton = require.resolve('bpmn-to-image/skeleton.html');
+            const viewerScript = path.relative(
+              path.dirname(skeleton),
+              require.resolve('bpmn-js/dist/bpmn-viewer.production.min.js')
+            );
+
+            await page.goto('file://' + skeleton);
+
+            for (const input of files) {
+              const xml = fs.readFileSync(input, 'utf8');
+
+              const desiredViewport = await page.evaluate(async (diagramXML, options) => {
+                const { viewerScript, ...openOptions } = options;
+                await loadScript(viewerScript);
+                return openDiagram(diagramXML, openOptions);
+              }, xml, { title: path.basename(input), viewerScript });
+
+              await page.setViewport({
+                width: Math.round(desiredViewport.width),
+                height: Math.round(desiredViewport.height),
+                deviceScaleFactor: 1
+              });
+
+              await page.evaluate(() => resize());
+              const svg = await page.evaluate(() => toSVG());
+
+              const out = input.replace(/\.bpmn$/i, '.svg');
+              fs.writeFileSync(out, svg, 'utf8');
+              console.log('wrote', out);
+            }
+
+            await browser.close();
+          })().catch(err => { console.error(err); process.exit(1); });
+          JS
+
+          mapfile -d '' FILES < <(find "${SITE_DIR}/docs/bpmn" -name '*.bpmn' -print0)
+          if [ "${#FILES[@]}" -gt 0 ]; then
+            node bpmn-export.js "${FILES[@]}"
+          fi
+
+      # --- Structurizr DSL (.dsl -> .puml -> .svg) ---
       - name: Render Structurizr DSL to SVG
         if: ${{ hashFiles('docs/c4/**/*.dsl') != '' }}
         run: |
           rsync -a --include='*/' --include='*.dsl' --exclude='*' docs/c4/ "${SITE_DIR}/docs/c4/"
-
-          # Для каждого workspace.dsl: export -> PlantUML в .generated, затем рендер .puml -> .svg рядом
           find "${SITE_DIR}/docs/c4" -name '*.dsl' -print0 | while IFS= read -r -d '' dsl; do
             outdir="$(dirname "$dsl")/.generated"
             mkdir -p "$outdir"
             ./structurizr-cli/structurizr.sh export -workspace "$dsl" -format plantuml -output "$outdir"
-
             find "$outdir" -name '*.puml' -print0 | \
-              xargs -0 -I{} sh -c '
-                svg_out_dir="$(dirname "$1")"
-                base="$(basename "$1" .puml)"
-                java -jar ./plantuml.jar -tsvg "$1"
-                mv "$(dirname "$1")/$base.svg" "$svg_out_dir/$base.svg"
-              ' sh {}
-
+              xargs -0 -I{} java -jar "${PLANTUML_JAR}" -tsvg "{}"
+            # перемещаем SVG из .generated рядом с .dsl
+            find "$outdir" -name '*.svg' -print0 | \
+              xargs -0 -I{} bash -lc 'mv "{}" "$(dirname "{}")/../$(basename "{}")"'
             rm -rf "$outdir"
           done
 

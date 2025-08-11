@@ -26,13 +26,13 @@
         <flowNodeRef>Task_TB_BuildSheets</flowNodeRef>
         <flowNodeRef>Start_TB</flowNodeRef>
       </lane>
-      <lane id="Lane_0jgwyz5" name="Отдел кадров">
+      <lane id="Lane_HR" name="Отдел кадров">
         <flowNodeRef>Task_TB_ExportTo1C</flowNodeRef>
         <flowNodeRef>End_TB</flowNodeRef>
       </lane>
     </laneSet>
     <startEvent id="Start_TB" name="Подготовка периода" />
-    <task id="Task_TB_DefineTypes" name="Утверждение метрик и типов достижений" />
+    <task id="Task_TB_DefineTypes" name="Утверждение метрик и шаблонов достижений" />
     <task id="Task_TB_BuildSheets" name="Сборка оценочных листов и привязка к должностям">
       <outgoing>Flow_1ytak2u</outgoing>
     </task>
@@ -124,7 +124,7 @@
       <bpmndi:BPMNShape id="LaneShape_Deputy_TB" bpmnElement="Lane_Deputy_TB" isHorizontal="true">
         <omgdc:Bounds x="160" y="80" width="2730" height="120" />
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Lane_0jgwyz5_di" bpmnElement="Lane_0jgwyz5" isHorizontal="true">
+      <bpmndi:BPMNShape id="Lane_HR_di" bpmnElement="Lane_HR" isHorizontal="true">
         <omgdc:Bounds x="160" y="560" width="2730" height="120" />
         <bpmndi:BPMNLabel />
       </bpmndi:BPMNShape>

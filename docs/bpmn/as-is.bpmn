@@ -22,7 +22,7 @@
         <flowNodeRef>Task_ASIS_Print</flowNodeRef>
         <flowNodeRef>Task_ASIS_Fill</flowNodeRef>
       </lane>
-      <lane id="Lane_Admin" name="Заместитель директора">
+      <lane id="Lane_Deputy" name="Заместитель директора">
         <flowNodeRef>Task_ASIS_MetricsDraft</flowNodeRef>
         <flowNodeRef>Task_ASIS_CheckCompleteness</flowNodeRef>
         <flowNodeRef>Activity_0t4j479</flowNodeRef>
@@ -79,11 +79,11 @@
   </process>
   <bpmndi:BPMNDiagram id="D_ASIS">
     <bpmndi:BPMNPlane id="Plane_ASIS" bpmnElement="P_ASIS">
-      <bpmndi:BPMNShape id="LaneShape_Admin" bpmnElement="Lane_Admin" isHorizontal="true">
+      <bpmndi:BPMNShape id="LaneShape_Deputy" bpmnElement="Lane_Deputy" isHorizontal="true">
         <omgdc:Bounds x="160" y="80" width="2670" height="140" />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="LaneShape_User" bpmnElement="Lane_User" isHorizontal="true">
-        <omgdc:Bounds x="160" y="220" width="2670" height="140" />
+        <omgdc:Bounds x="160" y="220" width="2670" height="145" />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="LaneShape_Leader" bpmnElement="Lane_Leader" isHorizontal="true">
         <omgdc:Bounds x="160" y="360" width="2670" height="120" />

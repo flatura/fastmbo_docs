@@ -1,7 +1,7 @@
 # Доменная модель
 
 ## Модель данных. Entity Relation Diagram
-![erd.svg](uml/erd.svg)
+![erd.svg](https://flatura.github.io/fastmbo_docs/docs/uml/erd.svg)
 
 ## Требования к структуре данных:
 

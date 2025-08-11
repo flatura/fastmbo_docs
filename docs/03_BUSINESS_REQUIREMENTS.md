@@ -67,10 +67,10 @@
 
 ## 6. Бизнес-процессы
 ### AS-IS
-![as-is.svg](uml/as-is.svg)
+![as-is.svg](https://flatura.github.io/fastmbo_docs/docs/bpmn/as-is.svg)
 
 ### TO-BE
-![to-be.svg](uml/to-be.svg)
+![to-be.svg](https://flatura.github.io/fastmbo_docs/docs/bpmn/to-be.svg)
 
 ## 7. Бизнес-правила
 - Один премиальный фонд на период;
