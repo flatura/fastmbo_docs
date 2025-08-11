@@ -4,14 +4,14 @@
 !define RECTANGLE rectangle
 
 actor Employee as "Сотрудник"
-actor Leader as "Руководитель"
+actor Deputy as "Заместитель директора"
 actor Director as "Директор"
 actor Admin as "Администратор системы"
 
 RECTANGLE FastMBO as "FastMBO"
 
 Employee  -- FastMBO : Заполнение и просмотр оценочных листов, достижений, метрик
-Leader    -- FastMBO : Согласование достижений/метрик подчинённых
+Deputy    -- FastMBO : Согласование достижений/метрик подчинённых
 Director  -- FastMBO : Управление периодами,\nутверждение результатов,\nконтроль фонда
 Admin     -- FastMBO : Администрирование,\nнастройки, аудит
 

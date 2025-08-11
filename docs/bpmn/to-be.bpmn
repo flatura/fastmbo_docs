@@ -1,0 +1,273 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<definitions xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:omgdc="http://www.omg.org/spec/DD/20100524/DC" xmlns:omgdi="http://www.omg.org/spec/DD/20100524/DI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" id="Defs_TOBE" targetNamespace="http://fastmbo.example/bpmn" exporter="Camunda Modeler" exporterVersion="5.37.0">
+  <process id="P_TOBE" name="TO-BE: Автоматизированный процесс" isExecutable="false">
+    <laneSet id="LS_TOBE">
+      <lane id="Lane_System_TB" name="Система">
+        <flowNodeRef>Task_TB_AutoCalc</flowNodeRef>
+        <flowNodeRef>Task_TB_PublishResults</flowNodeRef>
+      </lane>
+      <lane id="Lane_Leader_TB" name="Руководитель">
+        <flowNodeRef>Task_TB_ParallelReview</flowNodeRef>
+      </lane>
+      <lane id="Lane_User_TB" name="Сотрудник">
+        <flowNodeRef>Task_TB_FillOnline</flowNodeRef>
+        <flowNodeRef>Gateway_1swoyuh</flowNodeRef>
+        <flowNodeRef>Gateway_16a3gci</flowNodeRef>
+        <flowNodeRef>GW_TB_Review</flowNodeRef>
+      </lane>
+      <lane id="Lane_Director_TB" name="Директор">
+        <flowNodeRef>Task_TB_OpenPeriod</flowNodeRef>
+        <flowNodeRef>Task_TB_ClosePeriod</flowNodeRef>
+        <flowNodeRef>Task_TB_ManualAdjust</flowNodeRef>
+        <flowNodeRef>Task_TB_ApproveBonuses</flowNodeRef>
+      </lane>
+      <lane id="Lane_Deputy_TB" name="Заместитель директора">
+        <flowNodeRef>Task_TB_DefineTypes</flowNodeRef>
+        <flowNodeRef>Task_TB_BuildSheets</flowNodeRef>
+        <flowNodeRef>Start_TB</flowNodeRef>
+      </lane>
+      <lane id="Lane_0jgwyz5" name="Отдел кадров">
+        <flowNodeRef>Task_TB_ExportTo1C</flowNodeRef>
+        <flowNodeRef>End_TB</flowNodeRef>
+      </lane>
+    </laneSet>
+    <startEvent id="Start_TB" name="Подготовка периода" />
+    <task id="Task_TB_DefineTypes" name="Утверждение метрик и типов достижений" />
+    <task id="Task_TB_BuildSheets" name="Сборка оценочных листов и привязка к должностям">
+      <outgoing>Flow_1ytak2u</outgoing>
+    </task>
+    <task id="Task_TB_OpenPeriod" name="Запуск периода (разблокировка ввода)">
+      <incoming>Flow_1ytak2u</incoming>
+      <outgoing>Flow_05sb62x</outgoing>
+    </task>
+    <task id="Task_TB_FillOnline" name="Онлайн-заполнение метрик и достижений">
+      <incoming>Flow_1dqy3mj</incoming>
+      <outgoing>Flow_1ng77qy</outgoing>
+    </task>
+    <task id="Task_TB_ParallelReview" name="Параллельная валидация руководителями">
+      <incoming>Flow_1hc03la</incoming>
+      <outgoing>Flow_05vkngr</outgoing>
+    </task>
+    <exclusiveGateway id="GW_TB_Review" name="Все достижения согласованы?">
+      <incoming>Flow_0qzwbu3</incoming>
+      <outgoing>Flow_0gp9fev</outgoing>
+    </exclusiveGateway>
+    <task id="Task_TB_ClosePeriod" name="Закрытие периода (блокировка ввода)">
+      <outgoing>Flow_1rgwmzf</outgoing>
+    </task>
+    <task id="Task_TB_AutoCalc" name="Автоподсчёт (сумма баллов, цена балла, премии)">
+      <incoming>Flow_1rgwmzf</incoming>
+    </task>
+    <task id="Task_TB_ManualAdjust" name="Ручные корректировки">
+      <outgoing>Flow_0o1qyum</outgoing>
+    </task>
+    <task id="Task_TB_ApproveBonuses" name="Утверждение итогов">
+      <incoming>Flow_0o1qyum</incoming>
+      <outgoing>Flow_0vov6ok</outgoing>
+    </task>
+    <task id="Task_TB_PublishResults" name="Публикация премий в ЛК">
+      <incoming>Flow_0vov6ok</incoming>
+      <outgoing>Flow_1393rau</outgoing>
+    </task>
+    <task id="Task_TB_ExportTo1C" name="Экспорт в 1С (CSV/коннектор)">
+      <incoming>Flow_1393rau</incoming>
+      <outgoing>Flow_05e0sdx</outgoing>
+    </task>
+    <endEvent id="End_TB" name="Завершено">
+      <incoming>Flow_05e0sdx</incoming>
+    </endEvent>
+    <sequenceFlow id="TB1" sourceRef="Start_TB" targetRef="Task_TB_DefineTypes" />
+    <sequenceFlow id="TB2" sourceRef="Task_TB_DefineTypes" targetRef="Task_TB_BuildSheets" />
+    <sequenceFlow id="TB9" name="Да" sourceRef="GW_TB_Review" targetRef="Task_TB_ClosePeriod">
+      <conditionExpression xsi:type="tFormalExpression">all_approved</conditionExpression>
+    </sequenceFlow>
+    <sequenceFlow id="TB13" sourceRef="Task_TB_AutoCalc" targetRef="Task_TB_ManualAdjust" />
+    <sequenceFlow id="Flow_1ytak2u" sourceRef="Task_TB_BuildSheets" targetRef="Task_TB_OpenPeriod" />
+    <sequenceFlow id="Flow_05e0sdx" sourceRef="Task_TB_ExportTo1C" targetRef="End_TB" />
+    <parallelGateway id="Gateway_1swoyuh">
+      <incoming>Flow_05sb62x</incoming>
+      <incoming>Flow_0gp9fev</incoming>
+      <outgoing>Flow_1dqy3mj</outgoing>
+      <outgoing>Flow_1hc03la</outgoing>
+    </parallelGateway>
+    <sequenceFlow id="Flow_05sb62x" sourceRef="Task_TB_OpenPeriod" targetRef="Gateway_1swoyuh" />
+    <sequenceFlow id="Flow_1dqy3mj" sourceRef="Gateway_1swoyuh" targetRef="Task_TB_FillOnline" />
+    <sequenceFlow id="Flow_1hc03la" sourceRef="Gateway_1swoyuh" targetRef="Task_TB_ParallelReview" />
+    <parallelGateway id="Gateway_16a3gci">
+      <incoming>Flow_1ng77qy</incoming>
+      <incoming>Flow_05vkngr</incoming>
+      <outgoing>Flow_0qzwbu3</outgoing>
+    </parallelGateway>
+    <sequenceFlow id="Flow_1ng77qy" sourceRef="Task_TB_FillOnline" targetRef="Gateway_16a3gci" />
+    <sequenceFlow id="Flow_05vkngr" sourceRef="Task_TB_ParallelReview" targetRef="Gateway_16a3gci" />
+    <sequenceFlow id="Flow_0gp9fev" sourceRef="GW_TB_Review" targetRef="Gateway_1swoyuh" />
+    <sequenceFlow id="Flow_0qzwbu3" sourceRef="Gateway_16a3gci" targetRef="GW_TB_Review" />
+    <sequenceFlow id="Flow_0o1qyum" sourceRef="Task_TB_ManualAdjust" targetRef="Task_TB_ApproveBonuses" />
+    <sequenceFlow id="Flow_1rgwmzf" sourceRef="Task_TB_ClosePeriod" targetRef="Task_TB_AutoCalc" />
+    <sequenceFlow id="Flow_0vov6ok" sourceRef="Task_TB_ApproveBonuses" targetRef="Task_TB_PublishResults" />
+    <sequenceFlow id="Flow_1393rau" sourceRef="Task_TB_PublishResults" targetRef="Task_TB_ExportTo1C" />
+  </process>
+  <bpmndi:BPMNDiagram id="D_TOBE">
+    <bpmndi:BPMNPlane id="Plane_TOBE" bpmnElement="P_TOBE">
+      <bpmndi:BPMNShape id="LaneShape_System_TB" bpmnElement="Lane_System_TB" isHorizontal="true">
+        <omgdc:Bounds x="160" y="680" width="2730" height="140" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="LaneShape_Leader_TB" bpmnElement="Lane_Leader_TB" isHorizontal="true">
+        <omgdc:Bounds x="160" y="450" width="2730" height="110" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="LaneShape_User_TB" bpmnElement="Lane_User_TB" isHorizontal="true">
+        <omgdc:Bounds x="160" y="320" width="2730" height="130" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="LaneShape_Director_TB" bpmnElement="Lane_Director_TB" isHorizontal="true">
+        <omgdc:Bounds x="160" y="200" width="2730" height="120" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="LaneShape_Deputy_TB" bpmnElement="Lane_Deputy_TB" isHorizontal="true">
+        <omgdc:Bounds x="160" y="80" width="2730" height="120" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Lane_0jgwyz5_di" bpmnElement="Lane_0jgwyz5" isHorizontal="true">
+        <omgdc:Bounds x="160" y="560" width="2730" height="120" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_Task_TB_AutoCalc" bpmnElement="Task_TB_AutoCalc">
+        <omgdc:Bounds x="1690" y="710" width="300" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_Start_TB" bpmnElement="Start_TB">
+        <omgdc:Bounds x="200" y="122" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <omgdc:Bounds x="189" y="158" width="58" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_Task_TB_DefineTypes" bpmnElement="Task_TB_DefineTypes">
+        <omgdc:Bounds x="280" y="100" width="260" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_Task_TB_OpenPeriod" bpmnElement="Task_TB_OpenPeriod">
+        <omgdc:Bounds x="615" y="220" width="260" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_Task_TB_BuildSheets" bpmnElement="Task_TB_BuildSheets">
+        <omgdc:Bounds x="585" y="100" width="300" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_Task_TB_ClosePeriod" bpmnElement="Task_TB_ClosePeriod">
+        <omgdc:Bounds x="1380" y="220" width="260" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_Task_TB_FillOnline" bpmnElement="Task_TB_FillOnline">
+        <omgdc:Bounds x="900" y="350" width="300" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Gateway_1swoyuh_di" bpmnElement="Gateway_1swoyuh">
+        <omgdc:Bounds x="720" y="365" width="50" height="50" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="BPMNShape_0bwp6gw" bpmnElement="Gateway_16a3gci">
+        <omgdc:Bounds x="1315" y="365" width="50" height="50" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_GW_TB_Review" bpmnElement="GW_TB_Review" isMarkerVisible="true">
+        <omgdc:Bounds x="1425" y="365" width="50" height="50" />
+        <bpmndi:BPMNLabel>
+          <omgdc:Bounds x="1408" y="425" width="83" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_Task_TB_ParallelReview" bpmnElement="Task_TB_ParallelReview">
+        <omgdc:Bounds x="920" y="470" width="260" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_Task_TB_ManualAdjust" bpmnElement="Task_TB_ManualAdjust">
+        <omgdc:Bounds x="1720" y="220" width="260" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_Task_TB_ExportTo1C" bpmnElement="Task_TB_ExportTo1C">
+        <omgdc:Bounds x="2400" y="580" width="260" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_End_TB" bpmnElement="End_TB">
+        <omgdc:Bounds x="2812" y="602" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <omgdc:Bounds x="2801" y="638" width="58" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_Task_TB_ApproveBonuses" bpmnElement="Task_TB_ApproveBonuses">
+        <omgdc:Bounds x="2040" y="220" width="260" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_Task_TB_PublishResults" bpmnElement="Task_TB_PublishResults">
+        <omgdc:Bounds x="2040" y="710" width="260" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="Edge_TB1" bpmnElement="TB1">
+        <omgdi:waypoint x="236" y="140" />
+        <omgdi:waypoint x="280" y="140" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_TB2" bpmnElement="TB2">
+        <omgdi:waypoint x="540" y="140" />
+        <omgdi:waypoint x="585" y="140" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_TB9" bpmnElement="TB9">
+        <omgdi:waypoint x="1475" y="390" />
+        <omgdi:waypoint x="1510" y="390" />
+        <omgdi:waypoint x="1510" y="300" />
+        <bpmndi:BPMNLabel>
+          <omgdc:Bounds x="1486" y="372" width="13" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_TB13" bpmnElement="TB13">
+        <omgdi:waypoint x="1850" y="710" />
+        <omgdi:waypoint x="1850" y="300" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1ytak2u_di" bpmnElement="Flow_1ytak2u">
+        <omgdi:waypoint x="735" y="180" />
+        <omgdi:waypoint x="735" y="220" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_05e0sdx_di" bpmnElement="Flow_05e0sdx">
+        <omgdi:waypoint x="2660" y="620" />
+        <omgdi:waypoint x="2812" y="620" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_05sb62x_di" bpmnElement="Flow_05sb62x">
+        <omgdi:waypoint x="745" y="300" />
+        <omgdi:waypoint x="745" y="365" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1dqy3mj_di" bpmnElement="Flow_1dqy3mj">
+        <omgdi:waypoint x="770" y="390" />
+        <omgdi:waypoint x="900" y="390" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1hc03la_di" bpmnElement="Flow_1hc03la">
+        <omgdi:waypoint x="745" y="415" />
+        <omgdi:waypoint x="745" y="510" />
+        <omgdi:waypoint x="920" y="510" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1ng77qy_di" bpmnElement="Flow_1ng77qy">
+        <omgdi:waypoint x="1200" y="390" />
+        <omgdi:waypoint x="1315" y="390" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_05vkngr_di" bpmnElement="Flow_05vkngr">
+        <omgdi:waypoint x="1180" y="510" />
+        <omgdi:waypoint x="1340" y="510" />
+        <omgdi:waypoint x="1340" y="415" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0gp9fev_di" bpmnElement="Flow_0gp9fev">
+        <omgdi:waypoint x="1450" y="365" />
+        <omgdi:waypoint x="1450" y="330" />
+        <omgdi:waypoint x="745" y="330" />
+        <omgdi:waypoint x="745" y="365" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0qzwbu3_di" bpmnElement="Flow_0qzwbu3">
+        <omgdi:waypoint x="1365" y="390" />
+        <omgdi:waypoint x="1425" y="390" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0o1qyum_di" bpmnElement="Flow_0o1qyum">
+        <omgdi:waypoint x="1980" y="260" />
+        <omgdi:waypoint x="2040" y="260" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1rgwmzf_di" bpmnElement="Flow_1rgwmzf">
+        <omgdi:waypoint x="1640" y="260" />
+        <omgdi:waypoint x="1665" y="260" />
+        <omgdi:waypoint x="1665" y="750" />
+        <omgdi:waypoint x="1690" y="750" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0vov6ok_di" bpmnElement="Flow_0vov6ok">
+        <omgdi:waypoint x="2170" y="300" />
+        <omgdi:waypoint x="2170" y="710" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1393rau_di" bpmnElement="Flow_1393rau">
+        <omgdi:waypoint x="2300" y="750" />
+        <omgdi:waypoint x="2350" y="750" />
+        <omgdi:waypoint x="2350" y="620" />
+        <omgdi:waypoint x="2400" y="620" />
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</definitions>
